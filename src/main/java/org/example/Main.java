@@ -1,0 +1,15 @@
+package org.example;
+
+import model.OrderApplication;
+
+import java.io.IOException;
+import java.net.URISyntaxException;
+
+//TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
+// click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
+public class Main {
+    public static void main(String[] args) throws IOException, URISyntaxException {
+        OrderApplication application = new OrderApplication();
+        application.run();
+    }
+}
