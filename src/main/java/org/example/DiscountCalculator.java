@@ -1,10 +1,20 @@
-package service;
+package org.example;
 
 import java.math.BigDecimal;
+
 // рассчитывает скидку по позиции заказа.
 public class DiscountCalculator {
-    private BigDecimal startDiscount = new BigDecimal("0.50");
-    private BigDecimal discountStep = new BigDecimal("0.05");
+
+    private final BigDecimal startDiscount;
+    private final BigDecimal discountStep;
+
+    public DiscountCalculator(
+            BigDecimal startDiscount,
+            BigDecimal discountStep
+    ) {
+        this.startDiscount = startDiscount;
+        this.discountStep = discountStep;
+    }
 
     public BigDecimal calculate(int orderIndex) {
         BigDecimal discount = startDiscount.subtract(
@@ -17,5 +27,4 @@ public class DiscountCalculator {
 
         return discount;
     }
-
 }

@@ -1,6 +1,4 @@
-package service;
-
-import model.Order;
+package org.example;
 
 import java.util.Comparator;
 import java.util.List;
