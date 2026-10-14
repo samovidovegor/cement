@@ -1,5 +1,7 @@
 package org.example;
 
+import org.example.console.ConsoleInteraction;
+
 import java.io.IOException;
 import java.nio.file.Path;
 

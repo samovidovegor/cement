@@ -1,4 +1,6 @@
-package org.example;
+package org.example.service;
+
+import org.example.model.Order;
 
 import java.math.BigDecimal;
 // считает стоимость одного заказа с учётом скидки.

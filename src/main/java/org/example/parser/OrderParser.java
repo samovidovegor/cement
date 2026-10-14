@@ -1,4 +1,6 @@
-package org.example;
+package org.example.parser;
+
+import org.example.model.Order;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
