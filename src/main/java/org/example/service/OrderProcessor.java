@@ -3,6 +3,7 @@ package org.example.service;
 import org.example.model.Order;
 import org.example.parser.OrderParser;
 import org.example.reader.FileOrderReader;
+import org.example.source.OrderSource;
 import org.example.writer.FileOrderWriter;
 
 import java.io.IOException;
@@ -14,27 +15,22 @@ import java.util.*;
 
 public class OrderProcessor {
 
-    private final FileOrderReader reader;
-    private final OrderParser parser;
+    private final OrderSource orderSource;
     private final OrderProcessingService processingService;
     private final FileOrderWriter writer;
 
     public OrderProcessor(
-            FileOrderReader reader,
-            OrderParser parser,
+            OrderSource orderSource,
             OrderProcessingService processingService,
             FileOrderWriter writer
     ) {
-        this.reader = reader;
-        this.parser = parser;
+        this.orderSource = orderSource;
         this.processingService = processingService;
         this.writer = writer;
     }
 
     public void run(Path inputPath, Path outputPath) throws IOException {
-        List<String> lines = reader.read(inputPath);
-
-        List<Order> orders = parser.parse(lines);
+        List<Order> orders = orderSource.readOrders(inputPath);
 
         Map<String, BigDecimal> totals =
                 processingService.process(orders);

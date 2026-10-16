@@ -1,3 +1,4 @@
+
 package org.example.parser;
 
 import org.example.model.Order;
@@ -6,29 +7,61 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 public class OrderParser {
 
     public List<Order> parse(List<String> lines) {
+        return parse(lines, "|");
+    }
+
+    public List<Order> parse(List<String> lines, String delimiter) {
         List<Order> orders = new ArrayList<>();
+        String regex = Pattern.quote(delimiter);
 
-        for (String line : lines) {
-            String[] parts = line.split("\\|");
+        for (int i = 0; i < lines.size(); i++) {
+            String line = lines.get(i);
 
-            LocalDateTime submissionTime =
-                    LocalDateTime.parse(parts[0]);
+            if (line == null || line.isBlank()) {
+                continue;
+            }
 
-            String companyName = parts[1];
+            String[] parts = line.split(regex, -1);
 
-            BigDecimal amountKg = new BigDecimal(parts[2]);
+            if (parts.length != 3
+                    || parts[0].isBlank()
+                    || parts[1].isBlank()
+                    || parts[2].isBlank()) {
+                throw new IllegalArgumentException(
+                        "Invalid order format at line " + (i + 1)
+                );
+            }
 
-            Order order = new Order(
-                    submissionTime,
-                    companyName,
-                    amountKg
-            );
+            try {
+                LocalDateTime submissionTime =
+                        LocalDateTime.parse(parts[0].trim());
+                String companyName = parts[1].trim();
+                BigDecimal amountKg =
+                        new BigDecimal(parts[2].trim());
 
-            orders.add(order);
+                if (amountKg.signum() < 0) {
+                    throw new IllegalArgumentException(
+                            "Order weight cannot be negative"
+                    );
+                }
+
+                orders.add(new Order(
+                        submissionTime,
+                        companyName,
+                        amountKg
+                ));
+            } catch (RuntimeException exception) {
+                throw new IllegalArgumentException(
+                        "Invalid order at line " + (i + 1)
+                                + ": " + line,
+                        exception
+                );
+            }
         }
 
         return orders;
