@@ -8,5 +8,7 @@ import java.util.List;
 
 public interface OrderSource {
 
+    boolean supports(Path path);
+
     List<Order> readOrders(Path path) throws IOException;
 }

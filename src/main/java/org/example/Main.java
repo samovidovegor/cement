@@ -18,30 +18,22 @@ import org.example.writer.FileOrderWriter;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.file.Path;
-import java.util.Locale;
+import java.util.List;
 
 public class Main {
 
     public static void main(String[] args) throws IOException {
+        // Инициализация зависимостей
         ConsoleInteraction console = new ConsoleInteraction();
-
-        Path inputPath = console.readInputPath();
-        Path outputPath = console.readOutputPath();
 
         FileOrderReader reader = new FileOrderReader();
         OrderParser parser = new OrderParser();
 
-        String fileName = inputPath.getFileName()
-                .toString()
-                .toLowerCase(Locale.ROOT);
+        OrderSource pipeSource =
+                new PipeOrderSourceAdapter(reader, parser);
 
-        OrderSource orderSource;
-
-        if (fileName.endsWith(".txt")) {
-            orderSource = new PipeOrderSourceAdapter(reader, parser);
-        } else {
-            orderSource = new HashOrderSourceAdapter(reader, parser);
-        }
+        OrderSource hashSource =
+                new HashOrderSourceAdapter(reader, parser);
 
         DiscountCalculator discountCalculator =
                 new DiscountCalculator(
@@ -54,6 +46,7 @@ public class Main {
 
         OrderSorter sorter = new OrderSorter();
         OrderAggregator aggregator = new OrderAggregator();
+        FileOrderWriter writer = new FileOrderWriter();
 
         BigDecimal pricePerKg = new BigDecimal("10");
 
@@ -66,13 +59,15 @@ public class Main {
                         pricePerKg
                 );
 
-        FileOrderWriter writer = new FileOrderWriter();
-
         OrderProcessor application = new OrderProcessor(
-                orderSource,
+                List.of(pipeSource, hashSource),
                 processingService,
                 writer
         );
+
+        // Выполнение программы
+        Path inputPath = console.readInputPath();
+        Path outputPath = console.readOutputPath();
 
         application.run(inputPath, outputPath);
     }

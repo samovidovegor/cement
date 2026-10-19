@@ -1,4 +1,5 @@
 
+
 package org.example.parser;
 
 import org.example.model.Order;
@@ -26,21 +27,23 @@ public class OrderParser {
                 continue;
             }
 
-            String[] parts = line.split(regex, -1);
-
-            if (parts.length != 3
-                    || parts[0].isBlank()
-                    || parts[1].isBlank()
-                    || parts[2].isBlank()) {
-                throw new IllegalArgumentException(
-                        "Invalid order format at line " + (i + 1)
-                );
-            }
-
             try {
+                String[] parts = line.split(regex, -1);
+
+                if (parts.length != 3
+                        || parts[0].isBlank()
+                        || parts[1].isBlank()
+                        || parts[2].isBlank()) {
+                    throw new IllegalArgumentException(
+                            "Expected timestamp, company and weight"
+                    );
+                }
+
                 LocalDateTime submissionTime =
                         LocalDateTime.parse(parts[0].trim());
+
                 String companyName = parts[1].trim();
+
                 BigDecimal amountKg =
                         new BigDecimal(parts[2].trim());
 
@@ -55,6 +58,7 @@ public class OrderParser {
                         companyName,
                         amountKg
                 ));
+
             } catch (RuntimeException exception) {
                 throw new IllegalArgumentException(
                         "Invalid order at line " + (i + 1)
@@ -67,3 +71,4 @@ public class OrderParser {
         return orders;
     }
 }
+

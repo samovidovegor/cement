@@ -1,36 +1,50 @@
+
 package org.example.service;
 
 import org.example.model.Order;
-import org.example.parser.OrderParser;
-import org.example.reader.FileOrderReader;
 import org.example.source.OrderSource;
 import org.example.writer.FileOrderWriter;
 
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.file.Path;
-import java.util.*;
-
-// пока выступает координатором всего процесса.
+import java.util.List;
+import java.util.Map;
 
 public class OrderProcessor {
 
-    private final OrderSource orderSource;
+    private final List<OrderSource> orderSources;
     private final OrderProcessingService processingService;
     private final FileOrderWriter writer;
 
     public OrderProcessor(
-            OrderSource orderSource,
+            List<OrderSource> orderSources,
             OrderProcessingService processingService,
             FileOrderWriter writer
     ) {
-        this.orderSource = orderSource;
+        this.orderSources = List.copyOf(orderSources);
         this.processingService = processingService;
         this.writer = writer;
     }
 
     public void run(Path inputPath, Path outputPath) throws IOException {
-        List<Order> orders = orderSource.readOrders(inputPath);
+        OrderSource source = orderSources.stream()
+                .filter(candidate -> candidate.supports(inputPath))
+                .findFirst()
+                .orElseThrow(() -> new IOException(
+                        "Unsupported input file format: " + inputPath
+                ));
+
+        List<Order> orders;
+
+        try {
+            orders = source.readOrders(inputPath);
+        } catch (IllegalArgumentException exception) {
+            throw new IOException(
+                    "Input file is corrupted: " + inputPath,
+                    exception
+            );
+        }
 
         Map<String, BigDecimal> totals =
                 processingService.process(orders);
@@ -38,6 +52,7 @@ public class OrderProcessor {
         writer.write(outputPath, totals);
     }
 }
+
 
 
 
