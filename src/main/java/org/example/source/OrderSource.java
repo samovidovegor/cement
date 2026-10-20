@@ -1,3 +1,4 @@
+
 package org.example.source;
 
 import org.example.model.Order;
@@ -8,7 +9,7 @@ import java.util.List;
 
 public interface OrderSource {
 
-    boolean supports(Path path);
+    String getSupportedExtension();
 
     List<Order> readOrders(Path path) throws IOException;
 }

@@ -9,14 +9,13 @@ import org.example.source.OrderSource;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Locale;
 
-public class PipeOrderSourceAdapter implements OrderSource {
+public class VerticalOrderSourceAdapter implements OrderSource {
 
     private final FileOrderReader reader;
     private final OrderParser parser;
 
-    public PipeOrderSourceAdapter(
+    public VerticalOrderSourceAdapter(
             FileOrderReader reader,
             OrderParser parser
     ) {
@@ -25,23 +24,13 @@ public class PipeOrderSourceAdapter implements OrderSource {
     }
 
     @Override
-    public boolean supports(Path path) {
-        return path.getFileName() != null
-                && path.getFileName().toString()
-                .toLowerCase(Locale.ROOT)
-                .endsWith(".txt");
+    public String getSupportedExtension() {
+        return ".txt";
     }
 
     @Override
     public List<Order> readOrders(Path path) throws IOException {
-        if (!supports(path)) {
-            throw new IOException(
-                    "Pipe adapter supports only .txt files: " + path
-            );
-        }
-
         List<String> lines = reader.read(path);
         return parser.parse(lines, "|");
     }
 }
-

@@ -1,10 +1,11 @@
 
-
 package org.example.parser;
 
+import org.example.exception.InvalidOrderFileException;
 import org.example.model.Order;
 
 import java.math.BigDecimal;
+import java.time.DateTimeException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -59,8 +60,8 @@ public class OrderParser {
                         amountKg
                 ));
 
-            } catch (RuntimeException exception) {
-                throw new IllegalArgumentException(
+            } catch (DateTimeException | IllegalArgumentException exception) {
+                throw new InvalidOrderFileException(
                         "Invalid order at line " + (i + 1)
                                 + ": " + line,
                         exception
@@ -71,4 +72,3 @@ public class OrderParser {
         return orders;
     }
 }
-

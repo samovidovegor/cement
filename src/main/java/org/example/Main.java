@@ -2,7 +2,7 @@
 package org.example;
 
 import org.example.adapter.HashOrderSourceAdapter;
-import org.example.adapter.PipeOrderSourceAdapter;
+import org.example.adapter.VerticalOrderSourceAdapter;
 import org.example.console.ConsoleInteraction;
 import org.example.parser.OrderParser;
 import org.example.reader.FileOrderReader;
@@ -29,8 +29,8 @@ public class Main {
         FileOrderReader reader = new FileOrderReader();
         OrderParser parser = new OrderParser();
 
-        OrderSource pipeSource =
-                new PipeOrderSourceAdapter(reader, parser);
+        OrderSource verticalSource =
+                new VerticalOrderSourceAdapter(reader, parser);
 
         OrderSource hashSource =
                 new HashOrderSourceAdapter(reader, parser);
@@ -60,12 +60,12 @@ public class Main {
                 );
 
         OrderProcessor application = new OrderProcessor(
-                List.of(pipeSource, hashSource),
+                List.of(verticalSource, hashSource),
                 processingService,
                 writer
         );
 
-        // Выполнение программы
+        // Запуск программы
         Path inputPath = console.readInputPath();
         Path outputPath = console.readOutputPath();
 

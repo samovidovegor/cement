@@ -1,6 +1,7 @@
 
 package org.example.service;
 
+import org.example.exception.UnsupportedFileFormatException;
 import org.example.model.Order;
 import org.example.source.OrderSource;
 import org.example.writer.FileOrderWriter;
@@ -8,12 +9,14 @@ import org.example.writer.FileOrderWriter;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 public class OrderProcessor {
 
-    private final List<OrderSource> orderSources;
+    private final Map<String, OrderSource> sourcesByExtension;
     private final OrderProcessingService processingService;
     private final FileOrderWriter writer;
 
@@ -22,38 +25,56 @@ public class OrderProcessor {
             OrderProcessingService processingService,
             FileOrderWriter writer
     ) {
-        this.orderSources = List.copyOf(orderSources);
+        this.sourcesByExtension = new HashMap<>();
+
+        for (OrderSource source : orderSources) {
+            String extension = source.getSupportedExtension()
+                    .toLowerCase(Locale.ROOT);
+
+            if (sourcesByExtension.putIfAbsent(extension, source) != null) {
+                throw new IllegalArgumentException(
+                        "Duplicate source for extension: " + extension
+                );
+            }
+        }
+
         this.processingService = processingService;
         this.writer = writer;
     }
 
     public void run(Path inputPath, Path outputPath) throws IOException {
-        OrderSource source = orderSources.stream()
-                .filter(candidate -> candidate.supports(inputPath))
-                .findFirst()
-                .orElseThrow(() -> new IOException(
-                        "Unsupported input file format: " + inputPath
-                ));
+        String extension = getExtension(inputPath);
 
-        List<Order> orders;
+        OrderSource source = sourcesByExtension.get(extension);
 
-        try {
-            orders = source.readOrders(inputPath);
-        } catch (IllegalArgumentException exception) {
-            throw new IOException(
-                    "Input file is corrupted: " + inputPath,
-                    exception
+        if (source == null) {
+            throw new UnsupportedFileFormatException(
+                    "Unsupported input file format: " + inputPath
             );
         }
+
+        List<Order> orders = source.readOrders(inputPath);
 
         Map<String, BigDecimal> totals =
                 processingService.process(orders);
 
         writer.write(outputPath, totals);
     }
+
+    private String getExtension(Path path) {
+        Path fileNamePath = path.getFileName();
+
+        if (fileNamePath == null) {
+            return "";
+        }
+
+        String fileName = fileNamePath.toString();
+        int dotIndex = fileName.lastIndexOf('.');
+
+        if (dotIndex <= 0) {
+            return "";
+        }
+
+        return fileName.substring(dotIndex).toLowerCase(Locale.ROOT);
+    }
 }
-
-
-
-
-
