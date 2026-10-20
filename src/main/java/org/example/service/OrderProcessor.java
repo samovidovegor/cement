@@ -9,8 +9,6 @@ import org.example.writer.FileOrderWriter;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -21,23 +19,11 @@ public class OrderProcessor {
     private final FileOrderWriter writer;
 
     public OrderProcessor(
-            List<OrderSource> orderSources,
+            Map<String, OrderSource> sourcesByExtension,
             OrderProcessingService processingService,
             FileOrderWriter writer
     ) {
-        this.sourcesByExtension = new HashMap<>();
-
-        for (OrderSource source : orderSources) {
-            String extension = source.getSupportedExtension()
-                    .toLowerCase(Locale.ROOT);
-
-            if (sourcesByExtension.putIfAbsent(extension, source) != null) {
-                throw new IllegalArgumentException(
-                        "Duplicate source for extension: " + extension
-                );
-            }
-        }
-
+        this.sourcesByExtension = Map.copyOf(sourcesByExtension);
         this.processingService = processingService;
         this.writer = writer;
     }
@@ -53,7 +39,7 @@ public class OrderProcessor {
             );
         }
 
-        List<Order> orders = source.readOrders(inputPath);
+        var orders = source.readOrders(inputPath);
 
         Map<String, BigDecimal> totals =
                 processingService.process(orders);

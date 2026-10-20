@@ -18,12 +18,12 @@ import org.example.writer.FileOrderWriter;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.file.Path;
-import java.util.List;
+import java.util.Map;
 
 public class Main {
 
     public static void main(String[] args) throws IOException {
-        // Инициализация зависимостей
+
         ConsoleInteraction console = new ConsoleInteraction();
 
         FileOrderReader reader = new FileOrderReader();
@@ -59,13 +59,17 @@ public class Main {
                         pricePerKg
                 );
 
+        Map<String, OrderSource> sourcesByExtension = Map.of(
+                ".txt", verticalSource,
+                "", hashSource
+        );
+
         OrderProcessor application = new OrderProcessor(
-                List.of(verticalSource, hashSource),
+                sourcesByExtension,
                 processingService,
                 writer
         );
 
-        // Запуск программы
         Path inputPath = console.readInputPath();
         Path outputPath = console.readOutputPath();
 
